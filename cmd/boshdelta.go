@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/sneal/bosh-delta/boshdelta"
 )
 
 func main() {
@@ -10,6 +12,13 @@ func main() {
 		usage()
 		os.Exit(1)
 	}
+
+	delta, err := boshdelta.Compare(os.Args[1], os.Args[2])
+	if err != nil {
+		fail(err)
+	}
+
+	fmt.Println(delta)
 }
 
 func usage() {
@@ -19,4 +28,10 @@ func usage() {
 	fmt.Println("USAGE:")
 	fmt.Println("  boshdelta release1 release2")
 	fmt.Println()
+}
+
+func fail(err error) {
+	fmt.Println("BOSH release comparision failed!")
+	fmt.Println(err.Error())
+	os.Exit(1)
 }
