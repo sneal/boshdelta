@@ -20,6 +20,14 @@ sane and efficient way without uneeded worry.
 2. Out of band, download release 2
 3. Run `bosh-delta release1.tgz release2.tgz`
 
+## Building
+
+1. [Install and configure direnv](http://direnv.net/)
+2. `git clone https://github.com/sneal/bosh-delta`
+3. `cd ./bosh-delta`
+4. Allow direnv to execute in this dir `direnv allow`
+5. Build the executable `go build -o $GOPATH/bin/boshdelta ./cmd/boshdelta.go`
+
 ## Initial Design
 
 1. Given the location of two releases which are tar files, extract each
