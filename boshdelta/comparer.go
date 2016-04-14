@@ -5,6 +5,6 @@ type Delta struct {
 }
 
 // Compare two BOSH releases
-func Compare(release1, release2 string) (*Delta, error) {
+func Compare(release1Path, release2Path string) (*Delta, error) {
 	return nil, nil
 }
