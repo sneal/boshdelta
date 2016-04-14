@@ -3,7 +3,6 @@ package boshdelta
 import (
 	"archive/tar"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"os"
 
@@ -11,6 +10,7 @@ import (
 )
 
 const releaseManifestFileName string = "release.MF"
+const jobManifestFileName string = "job.MF"
 
 // Release is a BOSH release
 type Release struct {
@@ -24,10 +24,17 @@ type Release struct {
 
 // Job is a job in a BOSH release
 type Job struct {
-	Name        string `yaml:"name"`
-	Version     string `yaml:"version"`
-	Sha1        string `yaml:"sha1"`
-	Fingerprint string `yaml:"fingerprint"`
+	Name        string              `yaml:"name"`
+	Version     string              `yaml:"version"`
+	Sha1        string              `yaml:"sha1"`
+	Fingerprint string              `yaml:"fingerprint"`
+	Properties  map[string]Property `yaml:"properties"`
+}
+
+// Property is a Job manifest property
+type Property struct {
+	Description string      `yaml:"description"`
+	Default     interface{} `yaml:"default"`
 }
 
 // NewRelease creates a release reading in the BOSH release metadata
@@ -44,31 +51,44 @@ func (r *Release) readManifest() (err error) {
 	if err != nil {
 		return err
 	}
-	defer func() { err = f.Close() }()
-	gzf, err := gzip.NewReader(f)
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+	tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
+		info := h.FileInfo()
+		if !info.IsDir() && info.Name() == releaseManifestFileName {
+			decoder := candiedyaml.NewDecoder(tr)
+			err = decoder.Decode(&r)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return nil
+}
+
+type tgzWalker func(h *tar.Header, r *tar.Reader) error
+
+func tgzWalk(tgz io.Reader, walkFn tgzWalker) error {
+	gzf, err := gzip.NewReader(tgz)
 	if err != nil {
 		return err
 	}
-	tarReader := tar.NewReader(gzf)
+	tr := tar.NewReader(gzf)
 	for {
-		header, err := tarReader.Next()
+		header, err := tr.Next()
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			return err
 		}
-
-		info := header.FileInfo()
-		if !info.IsDir() && info.Name() == releaseManifestFileName {
-			decoder := candiedyaml.NewDecoder(tarReader)
-			err = decoder.Decode(&r)
-			if err != nil {
-				fmt.Println(err)
-				return err
-			}
-			break
+		err = walkFn(header, tr)
+		if err != nil {
+			return err
 		}
 	}
-
 	return nil
 }
