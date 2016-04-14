@@ -48,6 +48,7 @@ func NewRelease(releasePath string) (*Release, error) {
 	return r, err
 }
 
+// FindJob returns a job instance by name, otherwise nil if not found
 func (r *Release) FindJob(n string) *Job {
 	for _, j := range r.Jobs {
 		if j.Name == n {
