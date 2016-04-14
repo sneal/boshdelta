@@ -43,19 +43,43 @@ var _ = Describe("Boshdelta", func() {
 		It("contains 2 jobs", func() {
 			Expect(release.Jobs).To(HaveLen(2))
 		})
-		It("contains the acceptance-tests job", func() {
-			job := release.Jobs[0]
-			Expect(job.Name).To(Equal("acceptance-tests"))
-			Expect(job.Version).To(Equal("d1b927ac3839a52f7caa29ac80878d8625fb4bcc"))
-			Expect(job.Sha1).To(Equal("dee26bdad425c0276df120c922551c994777cb42"))
-			Expect(job.Fingerprint).To(Equal("d1b927ac3839a52f7caa29ac80878d8625fb4bcc"))
+		Context("acceptance-tests job", func() {
+			var job *Job
+			BeforeEach(func() {
+				job = release.FindJob("acceptance-tests")
+				Expect(job).ToNot(BeNil())
+			})
+			It("has the correct name", func() {
+				Expect(job.Name).To(Equal("acceptance-tests"))
+			})
+			It("has the correct SHA1", func() {
+				Expect(job.Sha1).To(Equal("dee26bdad425c0276df120c922551c994777cb42"))
+			})
+			It("has the correct version", func() {
+				Expect(job.Version).To(Equal("d1b927ac3839a52f7caa29ac80878d8625fb4bcc"))
+			})
+			It("has the correct finger print", func() {
+				Expect(job.Fingerprint).To(Equal("d1b927ac3839a52f7caa29ac80878d8625fb4bcc"))
+			})
 		})
-		It("contains the redis job", func() {
-			job := release.Jobs[1]
-			Expect(job.Name).To(Equal("redis"))
-			Expect(job.Version).To(Equal("a52b9ad8bf105901dbd55e6dfb3af359b24a2d14"))
-			Expect(job.Sha1).To(Equal("fbb1fe127a25429c84a120c8f676c3e7f26ff051"))
-			Expect(job.Fingerprint).To(Equal("a52b9ad8bf105901dbd55e6dfb3af359b24a2d14"))
+		Context("redis job", func() {
+			var job *Job
+			BeforeEach(func() {
+				job = release.FindJob("redis")
+				Expect(job).ToNot(BeNil())
+			})
+			It("has the correct name", func() {
+				Expect(job.Name).To(Equal("redis"))
+			})
+			It("has the correct SHA1", func() {
+				Expect(job.Sha1).To(Equal("fbb1fe127a25429c84a120c8f676c3e7f26ff051"))
+			})
+			It("has the correct version", func() {
+				Expect(job.Version).To(Equal("a52b9ad8bf105901dbd55e6dfb3af359b24a2d14"))
+			})
+			It("has the correct finger print", func() {
+				Expect(job.Fingerprint).To(Equal("a52b9ad8bf105901dbd55e6dfb3af359b24a2d14"))
+			})
 		})
 	})
 })
