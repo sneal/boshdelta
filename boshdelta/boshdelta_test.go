@@ -61,6 +61,12 @@ var _ = Describe("Boshdelta", func() {
 			It("has the correct finger print", func() {
 				Expect(job.Fingerprint).To(Equal("d1b927ac3839a52f7caa29ac80878d8625fb4bcc"))
 			})
+			It("has the correct properties", func() {
+				Expect(job.Properties).To(HaveKey("redis.port"))
+				Expect(job.Properties).To(HaveKey("redis.password"))
+				Expect(job.Properties).To(HaveKey("redis.master"))
+				Expect(job.Properties).To(HaveKey("redis.slave"))
+			})
 		})
 		Context("redis job", func() {
 			var job *Job
@@ -79,6 +85,15 @@ var _ = Describe("Boshdelta", func() {
 			})
 			It("has the correct finger print", func() {
 				Expect(job.Fingerprint).To(Equal("a52b9ad8bf105901dbd55e6dfb3af359b24a2d14"))
+			})
+			It("has the correct properties", func() {
+				Expect(job.Properties).To(HaveKey("redis.port"))
+				Expect(job.Properties).To(HaveKey("redis.password"))
+				Expect(job.Properties).To(HaveKey("redis.master"))
+				Expect(job.Properties).To(HaveKey("consul.service.name"))
+				Expect(job.Properties).To(HaveKey("health.interval"))
+				Expect(job.Properties).To(HaveKey("health.disk.critical"))
+				Expect(job.Properties).To(HaveKey("health.disk.warning"))
 			})
 		})
 	})

@@ -5,6 +5,8 @@ import (
 	"compress/gzip"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/cloudfoundry-incubator/candiedyaml"
 )
@@ -24,11 +26,11 @@ type Release struct {
 
 // Job is a job in a BOSH release
 type Job struct {
-	Name        string              `yaml:"name"`
-	Version     string              `yaml:"version"`
-	Sha1        string              `yaml:"sha1"`
-	Fingerprint string              `yaml:"fingerprint"`
-	Properties  map[string]Property `yaml:"properties"`
+	Name        string               `yaml:"name"`
+	Version     string               `yaml:"version"`
+	Sha1        string               `yaml:"sha1"`
+	Fingerprint string               `yaml:"fingerprint"`
+	Properties  map[string]*Property `yaml:"properties"`
 }
 
 // Property is a Job manifest property
@@ -46,6 +48,15 @@ func NewRelease(releasePath string) (*Release, error) {
 	return r, err
 }
 
+func (r *Release) FindJob(n string) *Job {
+	for _, j := range r.Jobs {
+		if j.Name == n {
+			return &j
+		}
+	}
+	return nil
+}
+
 func (r *Release) readManifest() (err error) {
 	f, err := os.Open(r.Path)
 	if err != nil {
@@ -56,17 +67,39 @@ func (r *Release) readManifest() (err error) {
 			err = cerr
 		}
 	}()
+
+	jobs := make(map[string]*Job)
+
+	// read the release manifest and any of its contained job manifests
 	tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
-		info := h.FileInfo()
-		if !info.IsDir() && info.Name() == releaseManifestFileName {
+		if h.FileInfo().Name() == releaseManifestFileName {
 			decoder := candiedyaml.NewDecoder(tr)
-			err = decoder.Decode(&r)
-			if err != nil {
-				return err
+			rerr := decoder.Decode(&r)
+			if rerr != nil {
+				return rerr
 			}
+		} else if strings.HasPrefix(h.Name, "./jobs") {
+			jobName := strings.TrimSuffix(filepath.Base(h.Name), filepath.Ext(h.Name))
+			jobs[jobName] = &Job{}
+			tgzWalk(tr, func(jh *tar.Header, jtr *tar.Reader) error {
+				if jh.FileInfo().Name() == jobManifestFileName {
+					decoder := candiedyaml.NewDecoder(jtr)
+					jerr := decoder.Decode(jobs[jobName])
+					if jerr != nil {
+						return jerr
+					}
+				}
+				return nil
+			})
 		}
 		return nil
 	})
+
+	// copy over all properties read out of the individual job manifests
+	for i := range r.Jobs {
+		r.Jobs[i].Properties = jobs[r.Jobs[i].Name].Properties
+	}
+
 	return nil
 }
 
