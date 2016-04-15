@@ -13,12 +13,26 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println()
+	fmt.Println(fmt.Sprintf("Comparing %s to %s", os.Args[1], os.Args[2]))
 	delta, err := boshdelta.Compare(os.Args[1], os.Args[2])
 	if err != nil {
 		fail(err)
 	}
+	printDelta(delta)
+}
 
-	fmt.Println(delta)
+func printDelta(d *boshdelta.Delta) {
+	fmt.Println(fmt.Sprintf("Found %d new properties", len(d.DeltaProperties)))
+	fmt.Println()
+	for di := range d.DeltaProperties {
+		p := d.DeltaProperties[di]
+		fmt.Println("-------------------------------------------------------------------------------")
+		fmt.Println(fmt.Sprintf("%s", p.Name))
+		fmt.Println("-------------------------------------------------------------------------------")
+		fmt.Println(fmt.Sprintf("%s", p.Description))
+		fmt.Println()
+	}
 }
 
 func usage() {
