@@ -1,6 +1,7 @@
 package boshdelta_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -88,6 +89,34 @@ var _ = Describe("Boshdelta", func() {
 				Expect(job.Properties).To(HaveKey("health.disk.critical"))
 				Expect(job.Properties).To(HaveKey("health.disk.warning"))
 			})
+		})
+	})
+	Context("Compare Redis BOSH release 1 to release 12", func() {
+		var (
+			release1  *Release
+			release12 *Release
+			delta     *Delta
+		)
+
+		BeforeEach(func() {
+			release1 = loadBoshRelease("redis-boshrelease-1.tgz")
+			release12 = loadBoshRelease("redis-boshrelease-12.tgz")
+			delta = CompareReleases(release1, release12)
+		})
+
+		It("contains new properties from all jobs", func() {
+			fmt.Printf("%v", delta)
+			Expect(delta.ContainsProperty("redis.master")).To(BeTrue())
+			Expect(delta.ContainsProperty("redis.slave")).To(BeTrue())
+			Expect(delta.ContainsProperty("consul.service.name")).To(BeTrue())
+			Expect(delta.ContainsProperty("health.interval")).To(BeTrue())
+			Expect(delta.ContainsProperty("health.disk.critical")).To(BeTrue())
+			Expect(delta.ContainsProperty("health.disk.warning")).To(BeTrue())
+		})
+
+		It("does not contain existing properties", func() {
+			Expect(delta.ContainsProperty("redis.port")).To(BeFalse())
+			Expect(delta.ContainsProperty("redis.password")).To(BeFalse())
 		})
 	})
 })
