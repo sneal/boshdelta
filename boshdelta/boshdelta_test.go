@@ -12,24 +12,17 @@ import (
 
 var _ = Describe("Boshdelta", func() {
 	Context("Redis BOSH Release 12", func() {
-		var (
-			releasePath string
-			release     *Release
-		)
+		var release *Release
 
 		BeforeEach(func() {
-			dir, err := os.Getwd()
-			Expect(err).NotTo(HaveOccurred())
-			releasePath = filepath.Join(dir, "../fixtures/redis-boshrelease-12.tgz")
-			release, err = NewRelease(releasePath)
-			Expect(err).NotTo(HaveOccurred())
+			release = loadBoshRelease("redis-boshrelease-12.tgz")
 		})
 
 		It("can be loaded", func() {
 			Expect(release).NotTo(BeNil())
 		})
 		It("has the correct path", func() {
-			Expect(release.Path).To(Equal(releasePath))
+			Expect(release.Path).To(ContainSubstring("redis-boshrelease-12.tgz"))
 		})
 		It("has uncommitted changes", func() {
 			Expect(release.UncommittedChanges).To(BeTrue())
@@ -98,3 +91,12 @@ var _ = Describe("Boshdelta", func() {
 		})
 	})
 })
+
+func loadBoshRelease(releaseFileName string) *Release {
+	dir, err := os.Getwd()
+	Expect(err).NotTo(HaveOccurred())
+	releasePath := filepath.Join(dir, "../fixtures/", releaseFileName)
+	release, err := NewRelease(releasePath)
+	Expect(err).NotTo(HaveOccurred())
+	return release
+}
