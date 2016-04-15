@@ -58,6 +58,18 @@ func (r *Release) FindJob(n string) *Job {
 	return nil
 }
 
+// UniqueProperties returns all the distinct release properties across all jobs
+func (r *Release) UniqueProperties() map[string]*Property {
+	uniqueProps := make(map[string]*Property)
+	for ji := range r.Jobs {
+		rjob := r.Jobs[ji]
+		for pname, p := range rjob.Properties {
+			uniqueProps[pname] = p
+		}
+	}
+	return uniqueProps
+}
+
 func (r *Release) readManifest() (err error) {
 	f, err := os.Open(r.Path)
 	if err != nil {

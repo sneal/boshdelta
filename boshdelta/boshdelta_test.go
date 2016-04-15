@@ -90,6 +90,23 @@ var _ = Describe("Boshdelta", func() {
 				Expect(job.Properties).To(HaveKey("health.disk.warning"))
 			})
 		})
+		Context("UniqueProperties", func() {
+			var props map[string]*Property
+			BeforeEach(func() {
+				props = release.UniqueProperties()
+			})
+			It("contains unique properties across all jobs", func() {
+				Expect(props).To(HaveLen(8))
+				Expect(props).To(HaveKey("redis.port"))
+				Expect(props).To(HaveKey("redis.password"))
+				Expect(props).To(HaveKey("redis.master"))
+				Expect(props).To(HaveKey("redis.slave"))
+				Expect(props).To(HaveKey("consul.service.name"))
+				Expect(props).To(HaveKey("health.interval"))
+				Expect(props).To(HaveKey("health.disk.critical"))
+				Expect(props).To(HaveKey("health.disk.warning"))
+			})
+		})
 	})
 	Context("Compare Redis BOSH release 1 to release 12", func() {
 		var (
