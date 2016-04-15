@@ -1,7 +1,5 @@
 package boshdelta
 
-import "fmt"
-
 // Delta is the result from comparing two BOSH releases
 type Delta struct {
 	DeltaProperties []DeltaProperty
@@ -39,26 +37,14 @@ func Compare(release1Path, release2Path string) (*Delta, error) {
 // CompareReleases compares two loaded BOSH releases
 func CompareReleases(release1, release2 *Release) *Delta {
 	d := &Delta{}
-	for ji := range release1.Jobs {
-		r1job := release1.Jobs[ji]
-		r2job := release2.FindJob(r1job.Name)
-		fmt.Println(r1job.Name)
-		if r2job == nil {
-			// new job, add all properties
-			// TODO add properties
-		} else {
-			// existing job, compare properties
-			for k := range r1job.Properties {
-				if _, ok := r2job.Properties[k]; !ok {
-					// new property
-					d.DeltaProperties = append(d.DeltaProperties, DeltaProperty{
-						Name:        k,
-						Description: r2job.Properties[k].Description,
-					})
-				} else {
-					// existing property
-				}
-			}
+	release1UniqueProps := release1.UniqueProperties()
+	release2UniqueProps := release2.UniqueProperties()
+	for n, p := range release2UniqueProps {
+		if _, ok := release1UniqueProps[n]; !ok {
+			d.DeltaProperties = append(d.DeltaProperties, DeltaProperty{
+				Name:        n,
+				Description: p.Description,
+			})
 		}
 	}
 	return d

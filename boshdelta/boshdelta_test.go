@@ -1,7 +1,6 @@
 package boshdelta_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -122,7 +121,6 @@ var _ = Describe("Boshdelta", func() {
 		})
 
 		It("contains new properties from all jobs", func() {
-			fmt.Printf("%v", delta)
 			Expect(delta.ContainsProperty("redis.master")).To(BeTrue())
 			Expect(delta.ContainsProperty("redis.slave")).To(BeTrue())
 			Expect(delta.ContainsProperty("consul.service.name")).To(BeTrue())
