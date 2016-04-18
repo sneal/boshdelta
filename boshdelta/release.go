@@ -38,13 +38,29 @@ type Property struct {
 	Default     interface{} `yaml:"default"`
 }
 
-// NewRelease creates a release reading in the BOSH release metadata
-func NewRelease(releasePath string) (*Release, error) {
-	r := &Release{
+// NewRelease creates a release reading in the BOSH release metadata from the specified file
+func NewRelease(releasePath string) (r *Release, err error) {
+	f, err := os.Open(releasePath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+	r, err = NewReleaseFromReader(f, releasePath)
+	return r, err
+}
+
+// NewReleaseFromReader creates a release reading in the BOSH release metadata
+// from the specified reader
+func NewReleaseFromReader(r io.Reader, releasePath string) (*Release, error) {
+	release := &Release{
 		Path: releasePath,
 	}
-	err := r.loadRelease()
-	return r, err
+	err := release.readReleaseAndJobManifests(r)
+	return release, err
 }
 
 // FindJob returns a job instance by name, otherwise nil if not found
