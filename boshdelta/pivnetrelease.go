@@ -1,9 +1,11 @@
 package boshdelta
 
 import (
+	"archive/tar"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // PivnetRelease is a Pivotal network release, .pivotal file
@@ -37,7 +39,18 @@ func (p *PivnetRelease) loadReleases() (err error) {
 	}()
 
 	// load all the releases
-	// TODO: load the pivotal file and walk all tgz files under releases
+	err = tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
+		fmt.Println(h.Name)
+		if h.FileInfo().IsDir() {
+			return nil
+		} else if strings.HasPrefix(h.Name, "./releases") {
+			//releaseName := strings.TrimSuffix(filepath.Base(h.Name), filepath.Ext(h.Name))
+			p.Releases = append(p.Releases, Release{
+				Path: h.Name,
+			})
+		}
+		return nil
+	})
 
 	return nil
 }

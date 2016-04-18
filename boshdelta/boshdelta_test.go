@@ -153,14 +153,18 @@ var _ = Describe("Pivnet release", func() {
 		var release *PivnetRelease
 
 		BeforeEach(func() {
-			release = loadPivnetRelease("p-redis.1.5.0.pivotal")
+			// COPYFILE_DISABLE=1 tar czfv <src>/fixtures/p-redis-1.5.0.pivotal --exclude=".DS_Store" .
+			release = loadPivnetRelease("p-redis-1.5.0.pivotal")
 		})
 
 		It("can be loaded", func() {
 			Expect(release).NotTo(BeNil())
 		})
 		It("has the correct path", func() {
-			Expect(release.Path).To(ContainSubstring("p-redis.1.5.0.pivotal"))
+			Expect(release.Path).To(ContainSubstring("p-redis-1.5.0.pivotal"))
+		})
+		It("contains two releases", func() {
+			Expect(release.Releases).To(HaveLen(2))
 		})
 	})
 })
