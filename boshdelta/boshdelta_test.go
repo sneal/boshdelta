@@ -166,11 +166,29 @@ var _ = Describe("Pivnet release", func() {
 		It("contains two releases", func() {
 			Expect(release.Releases).To(HaveLen(2))
 		})
-		It("contains the redis BOSH release", func() {
-			Expect(release.Releases[0].Path).To(Equal("./releases/redis-boshrelease-12.tgz"))
+		Context("redis BOSH release", func() {
+			var redisRelease Release
+			BeforeEach(func() {
+				redisRelease = release.Releases[0]
+			})
+			It("isn't nil", func() {
+				Expect(redisRelease).NotTo(BeNil())
+			})
+			It("has the correct relative path", func() {
+				Expect(redisRelease.Path).To(Equal("./releases/redis-boshrelease-12.tgz"))
+			})
 		})
-		It("contains the redis BOSH release", func() {
-			Expect(release.Releases[1].Path).To(Equal("./releases/xip-release-2.tgz"))
+		Context("redis Xip release", func() {
+			var xipRelease Release
+			BeforeEach(func() {
+				xipRelease = release.Releases[1]
+			})
+			It("isn't nil", func() {
+				Expect(xipRelease).NotTo(BeNil())
+			})
+			It("has the correct relative path", func() {
+				Expect(xipRelease.Path).To(Equal("./releases/xip-release-2.tgz"))
+			})
 		})
 	})
 })
