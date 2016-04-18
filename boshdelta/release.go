@@ -2,6 +2,7 @@ package boshdelta
 
 import (
 	"archive/tar"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,7 @@ func NewRelease(releasePath string) (*Release, error) {
 	r := &Release{
 		Path: releasePath,
 	}
-	err := r.readManifest()
+	err := r.loadRelease()
 	return r, err
 }
 
@@ -68,7 +69,7 @@ func (r *Release) UniqueProperties() map[string]*Property {
 	return uniqueProps
 }
 
-func (r *Release) readManifest() (err error) {
+func (r *Release) loadRelease() (err error) {
 	f, err := os.Open(r.Path)
 	if err != nil {
 		return err
@@ -78,11 +79,15 @@ func (r *Release) readManifest() (err error) {
 			err = cerr
 		}
 	}()
+	err = r.readReleaseAndJobManifests(f)
+	return err
+}
 
+func (r *Release) readReleaseAndJobManifests(f io.Reader) error {
 	jobs := make(map[string]*Job)
 
 	// read the release manifest and any of its contained job manifests
-	err = tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
+	err := tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
 		if h.FileInfo().IsDir() {
 			return nil
 		} else if h.FileInfo().Name() == releaseManifestFileName {
