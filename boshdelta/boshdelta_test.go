@@ -136,11 +136,49 @@ var _ = Describe("Boshdelta", func() {
 	})
 })
 
+var _ = Describe("Pivnet release", func() {
+	Context("Invalid .pivotal file", func() {
+		var (
+			release *PivnetRelease
+			err     error
+		)
+		BeforeEach(func() {
+			release, err = NewPivnetRelease(fixturePath("redis-boshrelease-1.tgz"))
+		})
+		It("returns an error when the file doesn't end in .pivotal", func() {
+			Expect(err).To(MatchError("Expected a .pivotal file, but instead got a .tgz file"))
+		})
+	})
+	Context("Redis release 1.5", func() {
+		var release *PivnetRelease
+
+		BeforeEach(func() {
+			release = loadPivnetRelease("p-redis.1.5.0.pivotal")
+		})
+
+		It("can be loaded", func() {
+			Expect(release).NotTo(BeNil())
+		})
+		It("has the correct path", func() {
+			Expect(release.Path).To(ContainSubstring("p-redis.1.5.0.pivotal"))
+		})
+	})
+})
+
 func loadBoshRelease(releaseFileName string) *Release {
-	dir, err := os.Getwd()
-	Expect(err).NotTo(HaveOccurred())
-	releasePath := filepath.Join(dir, "../fixtures/", releaseFileName)
-	release, err := NewRelease(releasePath)
+	release, err := NewRelease(fixturePath(releaseFileName))
 	Expect(err).NotTo(HaveOccurred())
 	return release
+}
+
+func loadPivnetRelease(releaseFileName string) *PivnetRelease {
+	release, err := NewPivnetRelease(fixturePath(releaseFileName))
+	Expect(err).NotTo(HaveOccurred())
+	return release
+}
+
+func fixturePath(releaseFileName string) string {
+	dir, err := os.Getwd()
+	Expect(err).NotTo(HaveOccurred())
+	return filepath.Join(dir, "../fixtures/", releaseFileName)
 }
