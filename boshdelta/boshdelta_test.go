@@ -180,6 +180,16 @@ var _ = Describe("Pivnet release", func() {
 			It("has 2 jobs", func() {
 				Expect(redisRelease.Jobs).To(HaveLen(2))
 			})
+			It("contains the redis job", func() {
+				job := redisRelease.FindJob("redis")
+				Expect(job).ToNot(BeNil())
+				Expect(job.Name).To(Equal("redis"))
+			})
+			It("contains the acceptance-tests job", func() {
+				job := redisRelease.FindJob("acceptance-tests")
+				Expect(job).ToNot(BeNil())
+				Expect(job.Name).To(Equal("acceptance-tests"))
+			})
 		})
 		Context("redis Xip release", func() {
 			var xipRelease *Release
@@ -191,6 +201,14 @@ var _ = Describe("Pivnet release", func() {
 			})
 			It("has the correct relative path", func() {
 				Expect(xipRelease.Path).To(Equal("./releases/xip-release-2.tgz"))
+			})
+			It("has 1 job", func() {
+				Expect(xipRelease.Jobs).To(HaveLen(1))
+			})
+			It("contains the xip job", func() {
+				job := xipRelease.FindJob("xip")
+				Expect(job).ToNot(BeNil())
+				Expect(job.Name).To(Equal("xip"))
 			})
 		})
 	})
