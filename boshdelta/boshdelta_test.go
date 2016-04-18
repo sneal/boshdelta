@@ -167,7 +167,7 @@ var _ = Describe("Pivnet release", func() {
 			Expect(release.Releases).To(HaveLen(2))
 		})
 		Context("redis BOSH release", func() {
-			var redisRelease Release
+			var redisRelease *Release
 			BeforeEach(func() {
 				redisRelease = release.Releases[0]
 			})
@@ -177,9 +177,12 @@ var _ = Describe("Pivnet release", func() {
 			It("has the correct relative path", func() {
 				Expect(redisRelease.Path).To(Equal("./releases/redis-boshrelease-12.tgz"))
 			})
+			It("has 2 jobs", func() {
+				Expect(redisRelease.Jobs).To(HaveLen(2))
+			})
 		})
 		Context("redis Xip release", func() {
-			var xipRelease Release
+			var xipRelease *Release
 			BeforeEach(func() {
 				xipRelease = release.Releases[1]
 			})

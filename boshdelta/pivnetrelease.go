@@ -11,7 +11,7 @@ import (
 // PivnetRelease is a Pivotal network release, .pivotal file
 type PivnetRelease struct {
 	Path     string
-	Releases []Release
+	Releases []*Release
 }
 
 // NewPivnetReleaseFromFile loads a .pivotal release
@@ -40,14 +40,15 @@ func (p *PivnetRelease) loadReleases() (err error) {
 
 	// load all the releases
 	err = tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
-		fmt.Println(h.Name)
 		if h.FileInfo().IsDir() {
 			return nil
 		} else if strings.HasPrefix(h.Name, "./releases") {
 			//releaseName := strings.TrimSuffix(filepath.Base(h.Name), filepath.Ext(h.Name))
-			p.Releases = append(p.Releases, Release{
-				Path: h.Name,
-			})
+			release, rerr := NewRelease(tr, h.Name)
+			if rerr != nil {
+				return rerr
+			}
+			p.Releases = append(p.Releases, release)
 		}
 		return nil
 	})
