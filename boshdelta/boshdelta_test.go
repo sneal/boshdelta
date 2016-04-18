@@ -166,6 +166,12 @@ var _ = Describe("Pivnet release", func() {
 		It("contains two releases", func() {
 			Expect(release.Releases).To(HaveLen(2))
 		})
+		It("contains the redis BOSH release", func() {
+			Expect(release.Releases[0].Path).To(Equal("./releases/redis-boshrelease-12.tgz"))
+		})
+		It("contains the redis BOSH release", func() {
+			Expect(release.Releases[1].Path).To(Equal("./releases/xip-release-2.tgz"))
+		})
 	})
 })
 
