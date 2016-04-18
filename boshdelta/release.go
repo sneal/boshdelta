@@ -84,8 +84,10 @@ func (r *Release) readManifest() (err error) {
 	jobs := make(map[string]*Job)
 
 	// read the release manifest and any of its contained job manifests
-	tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
-		if h.FileInfo().Name() == releaseManifestFileName {
+	err = tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
+		if h.FileInfo().IsDir() {
+			return nil
+		} else if h.FileInfo().Name() == releaseManifestFileName {
 			decoder := candiedyaml.NewDecoder(tr)
 			rerr := decoder.Decode(&r)
 			if rerr != nil {
@@ -94,7 +96,7 @@ func (r *Release) readManifest() (err error) {
 		} else if strings.HasPrefix(h.Name, "./jobs") {
 			jobName := strings.TrimSuffix(filepath.Base(h.Name), filepath.Ext(h.Name))
 			jobs[jobName] = &Job{}
-			tgzWalk(tr, func(jh *tar.Header, jtr *tar.Reader) error {
+			jwerr := tgzWalk(tr, func(jh *tar.Header, jtr *tar.Reader) error {
 				if jh.FileInfo().Name() == jobManifestFileName {
 					decoder := candiedyaml.NewDecoder(jtr)
 					jerr := decoder.Decode(jobs[jobName])
@@ -104,9 +106,15 @@ func (r *Release) readManifest() (err error) {
 				}
 				return nil
 			})
+			if jwerr != nil {
+				return jwerr
+			}
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	// copy over all properties read out of the individual job manifests
 	for i := range r.Jobs {
