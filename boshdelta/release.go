@@ -38,8 +38,8 @@ type Property struct {
 	Default     interface{} `yaml:"default"`
 }
 
-// NewRelease creates a release reading in the BOSH release metadata from the specified file
-func NewRelease(releasePath string) (r *Release, err error) {
+// NewReleaseFromFile creates a release reading in the BOSH release metadata from the specified file
+func NewReleaseFromFile(releasePath string) (r *Release, err error) {
 	f, err := os.Open(releasePath)
 	if err != nil {
 		return nil, err
@@ -49,13 +49,13 @@ func NewRelease(releasePath string) (r *Release, err error) {
 			err = cerr
 		}
 	}()
-	r, err = NewReleaseFromReader(f, releasePath)
+	r, err = NewRelease(f, releasePath)
 	return r, err
 }
 
-// NewReleaseFromReader creates a release reading in the BOSH release metadata
+// NewRelease creates a release reading in the BOSH release metadata
 // from the specified reader
-func NewReleaseFromReader(r io.Reader, releasePath string) (*Release, error) {
+func NewRelease(r io.Reader, releasePath string) (*Release, error) {
 	release := &Release{
 		Path: releasePath,
 	}

@@ -14,8 +14,8 @@ type PivnetRelease struct {
 	Releases []Release
 }
 
-// NewPivnetRelease loads a .pivotal release
-func NewPivnetRelease(path string) (*PivnetRelease, error) {
+// NewPivnetReleaseFromFile loads a .pivotal release
+func NewPivnetReleaseFromFile(path string) (*PivnetRelease, error) {
 	if filepath.Ext(path) != ".pivotal" {
 		return nil, fmt.Errorf("Expected a .pivotal file, but instead got a %s file", filepath.Ext(path))
 	}

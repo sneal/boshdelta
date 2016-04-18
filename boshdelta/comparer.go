@@ -23,11 +23,11 @@ func (d *Delta) ContainsProperty(property string) bool {
 
 // Compare two BOSH releases
 func Compare(release1Path, release2Path string) (*Delta, error) {
-	release1, err := NewRelease(release1Path)
+	release1, err := NewReleaseFromFile(release1Path)
 	if err != nil {
 		return nil, err
 	}
-	release2, err := NewRelease(release2Path)
+	release2, err := NewReleaseFromFile(release2Path)
 	if err != nil {
 		return nil, err
 	}

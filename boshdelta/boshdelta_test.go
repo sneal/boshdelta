@@ -143,7 +143,7 @@ var _ = Describe("Pivnet release", func() {
 			err     error
 		)
 		BeforeEach(func() {
-			release, err = NewPivnetRelease(fixturePath("redis-boshrelease-1.tgz"))
+			release, err = NewPivnetReleaseFromFile(fixturePath("redis-boshrelease-1.tgz"))
 		})
 		It("returns an error when the file doesn't end in .pivotal", func() {
 			Expect(err).To(MatchError("Expected a .pivotal file, but instead got a .tgz file"))
@@ -194,13 +194,13 @@ var _ = Describe("Pivnet release", func() {
 })
 
 func loadBoshRelease(releaseFileName string) *Release {
-	release, err := NewRelease(fixturePath(releaseFileName))
+	release, err := NewReleaseFromFile(fixturePath(releaseFileName))
 	Expect(err).NotTo(HaveOccurred())
 	return release
 }
 
 func loadPivnetRelease(releaseFileName string) *PivnetRelease {
-	release, err := NewPivnetRelease(fixturePath(releaseFileName))
+	release, err := NewPivnetReleaseFromFile(fixturePath(releaseFileName))
 	Expect(err).NotTo(HaveOccurred())
 	return release
 }
