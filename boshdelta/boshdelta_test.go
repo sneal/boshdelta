@@ -153,7 +153,7 @@ var _ = Describe("Pivnet release", func() {
 		var release *PivnetRelease
 
 		BeforeEach(func() {
-			// COPYFILE_DISABLE=1 tar czfv <src>/fixtures/p-redis-1.5.0.pivotal --exclude=".DS_Store" .
+			// zip -vr p-redis-1.5.0.pivotal . -x "*.DS_Store"
 			release = loadPivnetRelease("p-redis-1.5.0.pivotal")
 		})
 
@@ -175,7 +175,7 @@ var _ = Describe("Pivnet release", func() {
 				Expect(redisRelease).NotTo(BeNil())
 			})
 			It("has the correct relative path", func() {
-				Expect(redisRelease.Path).To(Equal("./releases/redis-boshrelease-12.tgz"))
+				Expect(redisRelease.Path).To(Equal("releases/redis-boshrelease-12.tgz"))
 			})
 			It("has 2 jobs", func() {
 				Expect(redisRelease.Jobs).To(HaveLen(2))
@@ -200,7 +200,7 @@ var _ = Describe("Pivnet release", func() {
 				Expect(xipRelease).NotTo(BeNil())
 			})
 			It("has the correct relative path", func() {
-				Expect(xipRelease.Path).To(Equal("./releases/xip-release-2.tgz"))
+				Expect(xipRelease.Path).To(Equal("releases/xip-release-2.tgz"))
 			})
 			It("has 1 job", func() {
 				Expect(xipRelease.Jobs).To(HaveLen(1))
@@ -209,6 +209,26 @@ var _ = Describe("Pivnet release", func() {
 				job := xipRelease.FindJob("xip")
 				Expect(job).ToNot(BeNil())
 				Expect(job.Name).To(Equal("xip"))
+			})
+		})
+		Context("UniqueProperties", func() {
+			var props map[string]*Property
+			BeforeEach(func() {
+				props = release.UniqueProperties()
+			})
+			It("contains unique properties across all BOSH releases and jobs", func() {
+				Expect(props).To(HaveLen(11))
+				Expect(props).To(HaveKey("redis.port"))
+				Expect(props).To(HaveKey("redis.password"))
+				Expect(props).To(HaveKey("redis.master"))
+				Expect(props).To(HaveKey("redis.slave"))
+				Expect(props).To(HaveKey("consul.service.name"))
+				Expect(props).To(HaveKey("health.interval"))
+				Expect(props).To(HaveKey("health.disk.critical"))
+				Expect(props).To(HaveKey("health.disk.warning"))
+				Expect(props).To(HaveKey("xip.xip_pdns_conf"))
+				Expect(props).To(HaveKey("xip.named_conf"))
+				Expect(props).To(HaveKey("xip.pdns_conf"))
 			})
 		})
 	})

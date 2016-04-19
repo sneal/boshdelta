@@ -1,9 +1,8 @@
 package boshdelta
 
 import (
-	"archive/tar"
+	"archive/zip"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -22,36 +21,42 @@ func NewPivnetReleaseFromFile(path string) (*PivnetRelease, error) {
 	pivnetRelease := &PivnetRelease{
 		Path: path,
 	}
-	err := pivnetRelease.loadReleases()
+	err := pivnetRelease.loadBoshReleases()
 	return pivnetRelease, err
 }
 
-func (p *PivnetRelease) loadReleases() (err error) {
-	// load the .pivnet file
-	f, err := os.Open(p.Path)
+// UniqueProperties returns all the distinct release properties across all BOSH
+// releases and jobs
+func (p *PivnetRelease) UniqueProperties() map[string]*Property {
+	uniqueProps := make(map[string]*Property)
+	for _, rr := range p.Releases {
+		for pname, p := range rr.UniqueProperties() {
+			uniqueProps[pname] = p
+		}
+	}
+	return uniqueProps
+}
+
+func (p *PivnetRelease) loadBoshReleases() (err error) {
+	zipReader, err := zip.OpenReader(p.Path)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if cerr := f.Close(); cerr != nil {
-			err = cerr
-		}
-	}()
-
-	// load all the releases
-	err = tgzWalk(f, func(h *tar.Header, tr *tar.Reader) error {
-		if h.FileInfo().IsDir() {
-			return nil
-		} else if strings.HasPrefix(h.Name, "./releases") {
-			//releaseName := strings.TrimSuffix(filepath.Base(h.Name), filepath.Ext(h.Name))
-			release, rerr := NewRelease(tr, h.Name)
+	for _, zipFile := range zipReader.File {
+		if !zipFile.FileInfo().IsDir() && strings.HasPrefix(zipFile.Name, "releases/") {
+			zf, zerr := zipFile.Open()
+			if zerr != nil {
+				return zerr
+			}
+			release, rerr := NewRelease(zf, zipFile.Name)
 			if rerr != nil {
 				return rerr
 			}
 			p.Releases = append(p.Releases, release)
 		}
-		return nil
-	})
-
-	return nil
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }

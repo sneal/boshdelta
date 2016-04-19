@@ -33,7 +33,15 @@ func Compare(release1Path, release2Path string) (*Delta, error) {
 			"assuming different release types.")
 	}
 	if filepath.Ext(release1Path) == ".pivotal" {
-		fmt.Println("NOT YET IMPLEMENTED!")
+		release1, err := NewPivnetReleaseFromFile(release1Path)
+		if err != nil {
+			return nil, err
+		}
+		release2, err := NewPivnetReleaseFromFile(release2Path)
+		if err != nil {
+			return nil, err
+		}
+		return CompareReleases(release1, release2), nil
 	} else if filepath.Ext(release1Path) == ".tgz" {
 		release1, err := NewReleaseFromFile(release1Path)
 		if err != nil {
@@ -49,7 +57,7 @@ func Compare(release1Path, release2Path string) (*Delta, error) {
 }
 
 // CompareReleases compares two loaded BOSH releases
-func CompareReleases(release1, release2 *Release) *Delta {
+func CompareReleases(release1, release2 UniquePropertyer) *Delta {
 	d := &Delta{}
 	release1UniqueProps := release1.UniqueProperties()
 	release2UniqueProps := release2.UniqueProperties()
